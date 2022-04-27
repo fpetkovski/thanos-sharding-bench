@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: querier
-        image: thanos:latest
-        imagePullPolicy: Never
+        image: fpetkovski/thanos:query-sharding
+        imagePullPolicy: IfNotPresent
         args:
         - query
         - --query.max-concurrent-select=50

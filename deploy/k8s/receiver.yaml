@@ -16,8 +16,8 @@
 #    spec:
 #      containers:
 #      - name: receiver
-#        image: thanos:latest
-#        imagePullPolicy: Never
+#        image: fpetkovski/thanos:query-sharding
+#        imagePullPolicy: IfNotPresent
 #        args:
 #        - receive
 #        - --label=receive_replica="0"

@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: store-gw
-        image: thanos:latest
-        imagePullPolicy: Never
+        image: fpetkovski/thanos:query-sharding
+        imagePullPolicy: IfNotPresent
         args:
         - store
         - --sync-block-duration=30s

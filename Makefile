@@ -1,7 +1,6 @@
 start:
 	kind create cluster --config deploy/config.yaml || true
-	docker save thanos:latest | docker exec --privileged -i kind-control-plane ctr --namespace=k8s.io images import --all-platforms -
-
+	
 	kubectl create -f deploy/k8s/0-crds.yaml || true
 	kubectl wait --for condition=established --timeout=60s crd/servicemonitors.monitoring.coreos.com
 	kubectl wait --for condition=established --timeout=60s crd/prometheuses.monitoring.coreos.com

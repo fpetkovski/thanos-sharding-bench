@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
       - name: sharder
-        image: thanos:latest
-        imagePullPolicy: Never
+        image: fpetkovski/thanos:query-sharding
+        imagePullPolicy: IfNotPresent
         args:
         - query
 #        - --log.level=debug
