@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: sharder
+  name: sharder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sharder
+  template:
+    metadata:
+      labels:
+        app: sharder
+    spec:
+      containers:
+      - name: sharder
+        image: thanos:latest
+        imagePullPolicy: Never
+        args:
+        - query
+#        - --log.level=debug
+        - --query.enable-sharding
+        - --endpoint=querier-0.querier.default.svc.cluster.local:10901
+        - --endpoint=querier-1.querier.default.svc.cluster.local:10901
+        - --endpoint=querier-2.querier.default.svc.cluster.local:10901
+#        - --endpoint=querier-3.querier.default.svc.cluster.local:10901
+#        - --endpoint=querier-4.querier.default.svc.cluster.local:10901
+#        - --endpoint=querier-5.querier.default.svc.cluster.local:10901
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: sharder
+  name: sharder
+spec:
+  type: NodePort
+  ports:
+  - port: 10902
+    protocol: TCP
+    targetPort: 10902
+    nodePort: 30902
+  selector:
+    app: sharder

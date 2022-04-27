@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: avalanche
+  name: avalanche
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: avalanche
+  template:
+    metadata:
+      labels:
+        app: avalanche
+    spec:
+      containers:
+      - image: quay.io/prometheuscommunity/avalanche:main
+        name: avalanche
+        ports:
+        - name: web
+          containerPort: 9001
+        args:
+        - --metric-count=1
+        - --label-count=1
+        - --series-count=10000
+        - --value-interval=2
+        - --series-interval=2
+        - --metric-interval=10000000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: avalanche
+  labels:
+    app: avalanche
+spec:
+  selector:
+    app: avalanche
+  ports:
+  - name: web
+    port: 9001
+    targetPort: web
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: avalanche
+spec:
+  selector:
+    matchLabels:
+      app: avalanche
+  endpoints:
+  - port: web

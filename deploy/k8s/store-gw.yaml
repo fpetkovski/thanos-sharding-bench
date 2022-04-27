@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: store-gw
+  name: store-gw
+spec:
+  serviceName: store-gw
+  replicas: 1
+  selector:
+    matchLabels:
+      app: store-gw
+  template:
+    metadata:
+      labels:
+        app: store-gw
+    spec:
+      containers:
+      - name: store-gw
+        image: thanos:latest
+        imagePullPolicy: Never
+        args:
+        - store
+        - --sync-block-duration=30s
+        - --data-dir="/local/state/data/dir"
+        - --objstore.config-file=/etc/thanos/bucket.yml
+        volumeMounts:
+        - mountPath: /etc/thanos/
+          name: config
+      volumes:
+      - name: config
+        secret:
+          secretName: store-gw
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: store-gw
+stringData:
+  bucket.yml: |
+    type: S3
+    config:
+      bucket: thanos
+      endpoint: minio.default.svc.cluster.local:9000
+      insecure: true
+      access_key: adminadmin
+      secret_key: adminadmin
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: store-gw
+  labels:
+    app: store-gw
+spec:
+  selector:
+    app: store-gw
+  ports:
+  - name: grpc
+    port: 10901
+    targetPort: 10901
+  - name: http
+    port: 10902
+    targetPort: 10902
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: store-gw
+spec:
+  selector:
+    matchLabels:
+      app: store-gw
+  endpoints:
+  - scheme: http
+    interval: 10s
+    port: http

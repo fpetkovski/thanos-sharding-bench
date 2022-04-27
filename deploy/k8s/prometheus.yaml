@@ -1,0 +1,45 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+spec:
+  replicas: 1
+  serviceMonitorSelector: {}
+  serviceMonitorNamespaceSelector: {}
+  retention: 2h
+#  remoteWrite:
+#  - url: http://receiver:19291/api/v1/receive
+  thanos:
+    image: thanos:latest
+    objectStorageConfig:
+      name: store-gw
+      key: bucket.yml
+  containers:
+  - name: thanos-sidecar
+    imagePullPolicy: Never
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sidecar
+spec:
+  selector:
+    app.kubernetes.io/instance: prometheus
+  ports:
+  - name: grpc
+    port: 10901
+    targetPort: grpc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/instance: prometheus
+  ports:
+  - name: http
+    port: 9090
+    targetPort: 9090
+    nodePort: 30909
