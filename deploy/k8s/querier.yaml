@@ -24,6 +24,7 @@ spec:
         - --query.max-concurrent-select=50
         - --query.replica-label=prometheus_replica
         - --endpoint=store-gw-0.store-gw.default.svc.cluster.local:10901
+        # - --endpoint=prometheus-prometheus-0.prometheus-operated.default.svc.cluster.local:10901
 ---
 apiVersion: v1
 kind: Service

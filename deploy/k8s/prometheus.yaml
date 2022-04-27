@@ -11,13 +11,21 @@ spec:
 #  - url: http://receiver:19291/api/v1/receive
   thanos:
     image: fpetkovski/thanos:query-sharding
-    imagePullPolicy: IfNotPresent
     objectStorageConfig:
       name: store-gw
       key: bucket.yml
   containers:
   - name: thanos-sidecar
     imagePullPolicy: Never
+  - name: prometheus
+    volumeMounts:
+    - mountPath: /prometheus
+      name: local-data
+  volumes:
+  - name: local-data
+    hostPath:
+      path: /data/prometheus
+
 ---
 apiVersion: v1
 kind: Service
