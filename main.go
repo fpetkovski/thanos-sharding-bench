@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
+	"log"
+	"strconv"
+	"time"
+
 	"github.com/prometheus/prometheus/model/labels"
 	"github.com/prometheus/prometheus/model/timestamp"
 	"github.com/thanos-io/thanos/pkg/block/metadata"
 	"github.com/thanos-io/thanos/pkg/testutil/e2eutil"
-	"log"
-	"strconv"
-	"time"
 )
 
 func main() {

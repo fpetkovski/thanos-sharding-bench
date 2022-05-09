@@ -19,15 +19,13 @@ spec:
         image: fpetkovski/thanos:query-sharding
         imagePullPolicy: IfNotPresent
         args:
-        - query
-#        - --log.level=debug
-        - --query.enable-sharding
-        - --endpoint=querier-0.querier.default.svc.cluster.local:10901
-        - --endpoint=querier-1.querier.default.svc.cluster.local:10901
-        - --endpoint=querier-2.querier.default.svc.cluster.local:10901
-#        - --endpoint=querier-3.querier.default.svc.cluster.local:10901
-#        - --endpoint=querier-4.querier.default.svc.cluster.local:10901
-#        - --endpoint=querier-5.querier.default.svc.cluster.local:10901
+          - query
+          - --endpoint=querier-0.querier.default.svc.cluster.local:10901
+          - --endpoint=querier-1.querier.default.svc.cluster.local:10901
+          - --endpoint=querier-2.querier.default.svc.cluster.local:10901
+          - --endpoint=querier-3.querier.default.svc.cluster.local:10901
+          - --endpoint=querier-4.querier.default.svc.cluster.local:10901
+          - --endpoint=querier-5.querier.default.svc.cluster.local:10901
 ---
 apiVersion: v1
 kind: Service
@@ -41,6 +39,6 @@ spec:
   - port: 10902
     protocol: TCP
     targetPort: 10902
-    nodePort: 30902
+    nodePort: 30901
   selector:
     app: sharder

@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: query-frontend
+  name: query-frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: query-frontend
+  template:
+    metadata:
+      labels:
+        app: query-frontend
+    spec:
+      containers:
+      - name: query-frontend
+        image: fpetkovski/thanos:query-sharding
+        imagePullPolicy: IfNotPresent
+        args:
+        - query-frontend
+#        - --query-frontend.num-shards=3
+        - --query-frontend.downstream-url=http://localhost:8080
+        ports:
+          - name: http
+            containerPort: 10902
+      - name: envoy
+        image: envoyproxy/envoy:v1.21.2
+        args:
+        - --concurrency 1
+        - --config-path /etc/envoy/envoy.yaml
+        volumeMounts:
+        - name: config
+          mountPath: /etc/envoy
+      volumes:
+      - name: config
+        configMap:
+          name: envoy-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: query-frontend
+  name: query-frontend
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 10902
+    protocol: TCP
+    targetPort: 10902
+    nodePort: 30902
+  selector:
+    app: query-frontend
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: envoy-config
+data:
+  envoy.yaml: |
+    admin:
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 8081
+    static_resources:
+      listeners:
+      - name: listener_0
+        address:
+          socket_address: { address: 0.0.0.0, port_value: 8080 }
+        filter_chains:
+        - filters:
+          - name: envoy.http_connection_manager
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              stat_prefix: ingress_http
+              http_filters:
+              - name: envoy.router
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+              route_config:
+                name: local_route
+                virtual_hosts:
+                - name: local_service
+                  domains:
+                  - "*"
+                  routes:
+                  - match:
+                      prefix: "/"
+                    route:
+                      cluster: queriers
+      clusters:
+      - name: queriers
+        connect_timeout: 0.5s
+        type: STRICT_DNS
+        lb_policy: round_robin
+        dns_refresh_rate: 1s
+        load_assignment:
+          cluster_name: queriers
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: querier-discovery
+                    port_value: 10902
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: query-frontend
+  labels:
+    app: query-frontend
+spec:
+  selector:
+    matchLabels:
+      app: query-frontend
+  endpoints:
+  - scheme: http
+    interval: 10s
+    port: http

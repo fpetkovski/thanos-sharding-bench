@@ -6,6 +6,9 @@ nodes:
   - hostPath: /Users/fpetkovski/scratch/thanos-sharding/data
     containerPath: /data
   extraPortMappings:
+  - containerPort: 30901
+    hostPort: 30901
+    protocol: TCP
   - containerPort: 30902
     hostPort: 30902
     protocol: TCP
