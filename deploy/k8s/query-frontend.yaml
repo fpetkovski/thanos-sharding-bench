@@ -20,7 +20,7 @@ spec:
         imagePullPolicy: IfNotPresent
         args:
         - query-frontend
-#        - --query-frontend.num-shards=3
+        - --query-frontend.num-shards=3
         - --query-frontend.downstream-url=http://localhost:8080
         ports:
           - name: http
